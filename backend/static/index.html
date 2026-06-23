@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Industrial Copilot - Unified Asset & Operations Brain</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vis Network via CDN -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <!-- Custom stylesheet -->
+    <link rel="stylesheet" href="/css/styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        safetyOrange: '#f97316',
+                        safetyOrangeHover: '#ea580c',
+                        darkPanel: '#1a1a22',
+                        darkBg: '#0c0c0e'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkBg text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Header bar -->
+    <header class="border-b border-[#2a2a35] bg-darkPanel px-6 py-4 flex justify-between items-center shadow-lg sticky top-0 z-40">
+        <div class="flex items-center gap-3">
+            <span class="pulse-indicator"></span>
+            <div>
+                <h1 class="text-lg font-black tracking-wider text-white uppercase">AI Industrial Copilot</h1>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest">Unified Asset & Operations Brain</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex items-center gap-6 text-xs text-slate-400 font-mono">
+                <div>SYS STATUS: <span class="text-green-400 font-bold">ONLINE</span></div>
+                <div>VESSEL GRAPH: <span class="text-orange-400 font-bold">ACTIVE</span></div>
+            </div>
+            <button id="mobile-mode-toggle" class="bg-safetyOrange hover:bg-safetyOrangeHover text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow-md shadow-orange-900/10">
+                📱 Simulate Field Tech Mobile Mode
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 flex overflow-hidden">
+        
+        <!-- ================= DESKTOP LAYOUT ================= -->
+        <div id="desktop-layout" class="flex-1 flex overflow-hidden">
+            
+            <!-- Sidebar Navigation -->
+            <aside class="w-64 border-r border-[#2a2a35] bg-darkPanel/40 p-4 flex flex-col justify-between overflow-y-auto">
+                <div class="space-y-6">
+                    <div class="space-y-1">
+                        <div class="text-[10px] text-slate-500 font-mono uppercase tracking-widest px-3 mb-2">Operational Centers</div>
+                        <nav class="space-y-1">
+                            <button data-tab="copilot" class="tab-btn active">
+                                <span>💬</span> Copilot QA Brain
+                            </button>
+                            <button data-tab="drawing" class="tab-btn">
+                                <span>📐</span> P&ID Drawing Agent
+                            </button>
+                            <button data-tab="rca" class="tab-btn">
+                                <span>🔍</span> RCA Investigator
+                            </button>
+                            <button data-tab="compliance" class="tab-btn">
+                                <span>⚖️</span> Compliance Auditor
+                            </button>
+                            <button data-tab="warnings" class="tab-btn">
+                                <span>⚠️</span> Proactive Permit Alert
+                            </button>
+                            <button data-tab="graph" class="tab-btn">
+                                <span>🕸️</span> Knowledge Graph
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- Ingestion Block -->
+                    <div class="border-t border-[#2a2a35] pt-4 space-y-4">
+                        <div class="text-[10px] text-slate-500 font-mono uppercase tracking-widest px-3">Manual Ingestion</div>
+                        <div id="doc-upload-zone" class="upload-zone rounded-lg p-4 text-center cursor-pointer bg-slate-900/10 hover:bg-slate-900/30">
+                            <input type="file" id="doc-file-input" accept=".pdf" class="hidden">
+                            <span class="text-2xl">📥</span>
+                            <h4 class="text-xs font-bold text-slate-300 mt-2">Upload OEM Manual</h4>
+                            <p class="text-[10px] text-slate-500 mt-1">Drag and drop PDF guidelines here</p>
+                        </div>
+                        <div id="ingestion-logs"></div>
+                    </div>
+                </div>
+
+                <div class="text-[10px] text-slate-600 font-mono text-center border-t border-[#2a2a35] pt-3">
+                    Hackathon v1.0.0 (Gemini 3.5)
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <section class="flex-1 flex flex-col bg-darkBg overflow-y-auto p-6">
+                
+                <!-- 1. Copilot QA Tab -->
+                <div id="copilot-tab" class="tab-content flex-1 flex gap-6 overflow-hidden">
+                    <div class="flex-1 flex flex-col glass-panel p-4 overflow-hidden">
+                        <div class="border-b border-[#2a2a35] pb-3 mb-4 flex justify-between items-center">
+                            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                <span class="pulse-indicator"></span> Operational RAG Knowledge QA
+                            </h2>
+                            <span class="text-[10px] bg-slate-900 text-slate-400 px-2 py-0.5 rounded font-mono border border-slate-800">COGNITIVE AGENT</span>
+                        </div>
+                        
+                        <!-- Messages box -->
+                        <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 pr-2 mb-4 flex flex-col">
+                            <div class="flex flex-col gap-1.5 max-w-[85%] rounded-xl p-3 text-xs bg-slate-900/70 border border-slate-800/80 text-slate-300">
+                                <div class="text-[9px] font-mono tracking-wide text-slate-500 uppercase">OPERATIONS BRAIN</div>
+                                <div class="msg-text leading-relaxed">System ready. Ask me standard operational, maintenance, or calibration queries. Upload PDF documents to inject OEM manuals.</div>
+                            </div>
+                        </div>
+
+                        <!-- Chat query box -->
+                        <form id="chat-form" class="flex gap-2 pt-2 border-t border-[#2a2a35]">
+                            <input type="text" id="chat-input" placeholder="Query plant manuals (e.g. 'What is the startup procedure for Boiler-101?')..." class="flex-1 form-input text-xs" required autocomplete="off">
+                            <button type="submit" class="bg-safetyOrange hover:bg-safetyOrangeHover text-white px-5 rounded-lg text-xs font-bold transition">Send</button>
+                        </form>
+                    </div>
+
+                    <!-- Citations panel -->
+                    <div class="w-80 flex flex-col gap-4">
+                        <div class="glass-panel p-4 flex-1 flex flex-col overflow-hidden">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-[#2a2a35] pb-2 mb-3">Manual References</h3>
+                            <div id="citations-list" class="flex-1 overflow-y-auto space-y-3 pr-1">
+                                <p class="text-slate-500 text-xs py-4">No specific manual references retrieved.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Drawing Tab (P&ID Vision Agent) -->
+                <div id="drawing-tab" class="tab-content flex-1 flex flex-col gap-6 hidden">
+                    <div class="glass-panel p-5 flex flex-col md:flex-row gap-6">
+                        <!-- Left upload section -->
+                        <div class="md:w-1/3 space-y-4">
+                            <h2 class="text-sm font-bold text-white uppercase tracking-wider">Engineering Diagrams (P&IDs)</h2>
+                            <div id="drawing-upload-zone" class="upload-zone rounded-lg p-6 text-center cursor-pointer bg-slate-900/10">
+                                <input type="file" id="drawing-file-input" accept="image/*,.pdf" class="hidden">
+                                <span class="text-3xl">📐</span>
+                                <h4 class="text-xs font-bold text-slate-300 mt-2">Select Layout Image / PDF</h4>
+                                <p class="text-[10px] text-slate-500 mt-1">Upload P&IDs, electrical schematics, or layouts</p>
+                            </div>
+                            <div id="drawing-preview"></div>
+                            
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-400">Visual Query Prompt</label>
+                                <textarea id="drawing-prompt-input" rows="3" class="w-full form-input text-xs" placeholder="e.g., Identify the safety valves downstream of Pump-02 and describe the flow direction..."></textarea>
+                            </div>
+                            <button id="submit-drawing-btn" disabled class="w-full bg-safetyOrange hover:bg-safetyOrangeHover text-white font-bold text-xs py-2.5 rounded-lg opacity-50 cursor-not-allowed transition">
+                                Analyze Drawing with Gemini Vision
+                            </button>
+                        </div>
+
+                        <!-- Right analysis output -->
+                        <div class="flex-1 flex flex-col min-h-[300px]">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Visual Extraction Output</h3>
+                            <div id="drawing-analysis-result" class="flex-1 flex items-center justify-center border border-[#2a2a35] rounded-lg bg-slate-900/10 p-4">
+                                <p class="text-slate-500 text-xs">Analysis results will be displayed here after drawing analysis.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. RCA Tab -->
+                <div id="rca-tab" class="tab-content flex-1 flex flex-col gap-6 hidden">
+                    <div class="glass-panel p-5 space-y-4">
+                        <div class="border-b border-[#2a2a35] pb-2">
+                            <h2 class="text-sm font-bold text-white uppercase tracking-wider">Root Cause Analysis Investigator</h2>
+                            <p class="text-[10px] text-slate-500">Drafts automated, structured 5-Whys reports utilizing manuals and past failure files.</p>
+                        </div>
+                        
+                        <form id="rca-form" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="space-y-1 md:col-span-2">
+                                    <label class="text-xs font-bold text-slate-400">Incident Description</label>
+                                    <input type="text" id="rca-description" placeholder="e.g. Compressor-05 experienced dynamic seal degradation and hydrocarbon vapor release." class="w-full form-input text-xs" required>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-400">Primary Asset ID (Optional)</label>
+                                    <input type="text" id="rca-asset-id" placeholder="e.g. Compressor-05" class="w-full form-input text-xs">
+                                </div>
+                            </div>
+                            <button type="submit" class="bg-safetyOrange hover:bg-safetyOrangeHover text-white font-bold text-xs px-6 py-2.5 rounded-lg transition">
+                                Compile Failure Logs & Generate RCA Report
+                            </button>
+                        </form>
+
+                        <div id="rca-report-output"></div>
+                    </div>
+                </div>
+
+                <!-- 4. Compliance Tab -->
+                <div id="compliance-tab" class="tab-content flex-1 flex flex-col gap-6 hidden">
+                    <div class="glass-panel p-5 space-y-4">
+                        <div class="border-b border-[#2a2a35] pb-2">
+                            <h2 class="text-sm font-bold text-white uppercase tracking-wider">Regulatory Compliance Auditor & Remediation</h2>
+                            <p class="text-[10px] text-slate-500">Audits operational procedure drafts (SOPs) against industrial safety regulations.</p>
+                        </div>
+
+                        <form id="compliance-form" class="space-y-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-400">Standard Operating Procedure Draft (SOP)</label>
+                                <textarea id="sop-textarea" rows="6" class="w-full form-input text-xs font-mono" placeholder="Paste SOP draft here (e.g. '1. Stop pump motor. 2. Loosen casing bolts. 3. Swap seals.')..."></textarea>
+                            </div>
+                            <button type="submit" class="bg-safetyOrange hover:bg-safetyOrangeHover text-white font-bold text-xs px-6 py-2.5 rounded-lg transition">
+                                Audit SOP Draft
+                            </button>
+                        </form>
+
+                        <div id="compliance-results"></div>
+                    </div>
+                </div>
+
+                <!-- 5. Warnings/Permit Tab -->
+                <div id="warnings-tab" class="tab-content flex-1 flex flex-col gap-6 hidden">
+                    <div class="glass-panel p-5 space-y-4">
+                        <div class="border-b border-[#2a2a35] pb-2">
+                            <h2 class="text-sm font-bold text-white uppercase tracking-wider">Lessons Learned & Safe Permit Checklist Generator</h2>
+                            <p class="text-[10px] text-slate-500">Proactively scans your planned job tasks against historic failure incidents to generate checklists.</p>
+                        </div>
+
+                        <form id="warnings-form" class="space-y-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-400">What is your planned maintenance task today?</label>
+                                <input type="text" id="task-description-input" placeholder="e.g. ReplacingDynamic seals on Compressor-05 while Boiler-101 is running." class="w-full form-input text-xs" required>
+                            </div>
+                            <button type="submit" class="bg-safetyOrange hover:bg-safetyOrangeHover text-white font-bold text-xs px-6 py-2.5 rounded-lg transition">
+                                Scan Past Failure Risks & Generate Work Permit
+                            </button>
+                        </form>
+
+                        <div id="warnings-output"></div>
+                    </div>
+                </div>
+
+                <!-- 6. Knowledge Graph Tab -->
+                <div id="graph-tab" class="tab-content flex-1 flex flex-col hidden">
+                    <div class="glass-panel p-4 flex-1 flex flex-col">
+                        <div class="border-b border-[#2a2a35] pb-2 mb-3 flex justify-between items-center">
+                            <div>
+                                <h2 class="text-sm font-bold text-white uppercase tracking-wider">Dynamic Asset Relationship Graph</h2>
+                                <p class="text-[10px] text-slate-500">Double-click on nodes to search their database manual entries and contexts.</p>
+                            </div>
+                            <!-- Legend -->
+                            <div class="flex items-center gap-4 text-xs font-mono">
+                                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-[#f97316]"></span> Asset</div>
+                                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-[#ec4899]"></span> Regulation</div>
+                                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-[#10b981]"></span> Team</div>
+                                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-[#0ea5e9]"></span> Drawing</div>
+                            </div>
+                        </div>
+                        
+                        <div id="graph-container" class="flex-1 bg-[#09090c] rounded-lg border border-[#2a2a35] min-h-[500px]"></div>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+
+
+        <!-- ================= MOBILE MOCK LAYOUT ================= -->
+        <div id="mobile-layout" class="flex-1 hidden flex items-center justify-center p-6 bg-[#08080a]">
+            <div class="mobile-frame glass-panel">
+                <div class="mobile-notch"></div>
+                
+                <div class="h-full flex flex-col bg-darkBg text-slate-200">
+                    <!-- Mobile Header -->
+                    <div class="bg-darkPanel border-b border-[#2a2a35] px-4 pt-8 pb-3 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="pulse-indicator"></span>
+                            <span class="text-xs font-bold text-white">FIELD-TECH ASSISTANT</span>
+                        </div>
+                        <span class="text-[9px] bg-slate-900 text-slate-500 px-2 py-0.5 rounded border border-slate-800 font-mono">MOBILE</span>
+                    </div>
+
+                    <!-- Mobile Body (Scrollable) -->
+                    <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                        
+                        <!-- Simulated Camera scanning box -->
+                        <div class="border border-[#2a2a35] rounded-xl p-3 bg-slate-900/30 text-center space-y-3 relative overflow-hidden">
+                            <div class="absolute inset-0 border border-orange-500/20 rounded-xl pointer-events-none animate-pulse"></div>
+                            <div class="text-2xl">📷</div>
+                            <div class="text-xs font-bold text-slate-300">Simulated QR Code Scanner</div>
+                            
+                            <div class="flex gap-2">
+                                <select id="qr-asset-select" class="flex-1 text-[11px] bg-slate-950 border border-slate-800 rounded p-1 text-slate-300">
+                                    <option value="">-- Choose Asset Tag --</option>
+                                    <option value="Boiler-101">Boiler-101</option>
+                                    <option value="Compressor-05">Compressor-05</option>
+                                    <option value="Pump-A">Pump-A</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Scan Result Area -->
+                        <div id="qr-result-body" class="bg-slate-900/10 border border-[#2a2a35] rounded-xl p-3">
+                            <p class="text-slate-400 text-center text-xs py-8">Select or scan an asset tag to load field SOPs.</p>
+                        </div>
+
+                        <!-- Mobile Chat Messages -->
+                        <div class="border-t border-slate-900 pt-4 space-y-3">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Field Brain QA Connection</h4>
+                            <div id="mobile-chat-messages" class="min-h-[120px] max-h-[200px] overflow-y-auto space-y-3 flex flex-col pr-1">
+                                <div class="flex flex-col gap-1.5 max-w-[85%] rounded-xl p-2 text-xs bg-slate-900/70 border border-slate-800/80 text-slate-300">
+                                    <div class="msg-text leading-tight">Field technician mode active. Speak or type your maintenance query.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Input Tray -->
+                    <div class="bg-darkPanel border-t border-[#2a2a35] p-3">
+                        <form id="mobile-chat-form" class="flex gap-2 items-center">
+                            <button type="button" id="mobile-mic-btn" class="bg-orange-950/40 hover:bg-orange-950 border border-orange-500/20 text-orange-400 p-2.5 rounded-lg text-xs font-bold transition shrink-0">
+                                🎙️ Tap to Speak
+                            </button>
+                            <input type="text" id="mobile-chat-input" placeholder="Query plant manuals..." class="flex-1 form-input text-xs py-2 px-2.5 bg-slate-950" required>
+                            <button type="submit" class="bg-safetyOrange hover:bg-safetyOrangeHover text-white px-3 py-2 rounded-lg text-xs font-bold transition shrink-0">Send</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Load App logic -->
+    <script type="module" src="/js/app.js"></script>
+</body>
+</html>
