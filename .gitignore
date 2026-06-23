@@ -1,0 +1,19 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Databases
+*.db
+*.sqlite
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Application uploads
+backend/uploads/
