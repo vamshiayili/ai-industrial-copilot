@@ -80,6 +80,16 @@ async def upload_document(file: UploadFile = File(...), db: Session = Depends(ge
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
+    # Check if document already exists
+    existing_doc = db.query(Document).filter(Document.filename == file.filename).first()
+    if existing_doc:
+        # Delete related chunks
+        db.query(DocumentChunk).filter(DocumentChunk.document_id == existing_doc.id).delete()
+        # Delete related relations
+        db.query(Relation).filter(Relation.document_id == existing_doc.id).delete()
+        db.delete(existing_doc)
+        db.commit()
+
     # Save document entry
     doc = Document(filename=file.filename, filepath=str(file_path), doc_type="manual")
     db.add(doc)
@@ -111,19 +121,12 @@ async def upload_document(file: UploadFile = File(...), db: Session = Depends(ge
             embedding_json=json.dumps(emb)
         )
         db.add(db_chunk)
-        db.commit()
-        db.refresh(db_chunk)
         
-        # Register chunk in vector store cache
-        vector_store.add_chunk(
-            chunk_id=db_chunk.id,
-            document_id=doc.id,
-            chunk_index=idx,
-            content=content,
-            page_number=page_num,
-            embedding=emb
-        )
-        
+    db.commit()
+    
+    # Reinitialize in-memory vector store cache
+    vector_store.initialize(db)
+    
     # Extract entity relationships using the full document context (combine some text for Gemini)
     combined_text = "\n".join(all_chunks_text[:5]) # Extract relations from first 5 pages/chunks to keep prompts reasonably sized
     extract_and_save_relations(db, combined_text, doc.id)

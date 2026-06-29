@@ -2,6 +2,7 @@ import json
 from sqlalchemy.orm import Session
 from backend.database import Relation
 from backend.services.gemini_service import generate_text
+from backend.config import GEMINI_API_KEY
 
 RELATION_EXTRACTION_PROMPT = """
 You are a domain-expert knowledge engineer working in industrial plants.
@@ -88,4 +89,25 @@ def extract_and_save_relations(db: Session, text: str, document_id: int):
         # In case of parsing failure, we don't throw to avoid interrupting document ingestion
         # Provide fallback mocked relation for testing if in mock mode
         if not GEMINI_API_KEY:
-            pass # Or seed a fallback mock
+            try:
+                db_relations = [
+                    Relation(
+                        source="Sample_OEM_Manual.pdf",
+                        target="Boiler-101",
+                        rel_type="references",
+                        description="Manual describes operating limits and startup procedures.",
+                        document_id=document_id
+                    ),
+                    Relation(
+                        source="Sample_OEM_Manual.pdf",
+                        target="Compressor-05",
+                        rel_type="references",
+                        description="Manual contains dynamic seal overhaul sequence.",
+                        document_id=document_id
+                    )
+                ]
+                db.add_all(db_relations)
+                db.commit()
+                print("Seeded fallback mock relations since API key is missing.")
+            except Exception as db_err:
+                print(f"Failed to seed fallback mock relations: {db_err}")
