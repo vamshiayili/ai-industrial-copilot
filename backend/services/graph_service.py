@@ -13,18 +13,18 @@ Entities should fall into these categories:
 - DOCUMENT (e.g., Operator Manual, Safety Log, Incident Report)
 
 Extract the relationship triples in the following JSON format:
-{
+{{
   "relations": [
-    {
+    {{
       "source": "Entity Name (use standard title case, e.g. Boiler-101, Compressor-05, OSHA-Standard-1910)",
       "target": "Entity Name (e.g. Pump-A, Maintenance Team A, etc.)",
       "rel_type": "one of: uses, maintains, references, controls, located_in, regulates",
       "description": "Short description of how they interact (1 sentence)"
-    }
+    }}
   ]
-}
+}}
 
-Only return the JSON. Do not include markdown code block formatting like ```json ... ```, just output the raw JSON text. If no relationships are found, return {"relations": []}.
+Only return the JSON. Do not include markdown code block formatting like ```json ... ```, just output the raw JSON text. If no relationships are found, return {{"relations": []}}.
 
 Document Excerpt:
 ---
